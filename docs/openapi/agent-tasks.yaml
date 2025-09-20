@@ -1,0 +1,94 @@
+openapi: 3.1.0
+info:
+  title: OfficeBuddy Agent API
+  version: 1.0.0
+  description: Contracts for the Bytebot Agent service POST /tasks
+servers:
+  - url: https://{agentDomain}
+    variables:
+      agentDomain:
+        default: example.up.railway.app
+paths:
+  /tasks:
+    post:
+      summary: Create a new task
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [description, priority]
+              properties:
+                description:
+                  type: string
+                priority:
+                  type: string
+                  enum: [LOW, MEDIUM, HIGH]
+                model:
+                  type: string
+                  description: Required unless server is configured with OPENAI_MODEL
+                metadata:
+                  type: object
+                  additionalProperties: true
+            examples:
+              withModel:
+                summary: Explicit model
+                value:
+                  description: Open example.com and take a screenshot of the homepage
+                  priority: MEDIUM
+                  model: gpt-4o-mini
+              withoutModel:
+                summary: Model omitted (server uses OPENAI_MODEL if configured)
+                value:
+                  description: Open example.com and take a screenshot of the homepage
+                  priority: MEDIUM
+      responses:
+        '200':
+          description: Task created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string, format: uuid }
+                  description: { type: string }
+                  type: { type: string }
+                  status: { type: string }
+                  priority: { type: string }
+                  control: { type: string }
+                  createdAt: { type: string, format: date-time }
+                  createdBy: { type: string }
+                  updatedAt: { type: string, format: date-time }
+                  executedAt: { type: ["string", "null"], format: date-time }
+                  completedAt: { type: ["string", "null"], format: date-time }
+                  queuedAt: { type: ["string", "null"], format: date-time }
+                  error: { type: ["string", "object", "null"] }
+                  result: { type: ["object", "null"] }
+                  model: { type: string }
+              examples:
+                created:
+                  value:
+                    id: 20e325e3-e64f-47fc-9880-e32a3fa2b1e7
+                    description: Open example.com and take a screenshot of the homepage
+                    type: IMMEDIATE
+                    status: PENDING
+                    priority: MEDIUM
+                    control: ASSISTANT
+                    createdAt: 2025-09-20T20:26:25.012Z
+                    createdBy: USER
+                    updatedAt: 2025-09-20T20:26:25.012Z
+                    model: gpt-4o-mini
+        '400':
+          description: Missing model and no server default configured
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+              examples:
+                missingModel:
+                  value:
+                    error: model is required
