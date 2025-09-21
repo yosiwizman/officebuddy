@@ -2,7 +2,7 @@
 // and /metrics via prom-client. Listens on process.env.PORT or 9991.
 
 import express from 'express';
-import { randomUUID } from 'uuid';
+import { randomUUID } from 'crypto';
 import { CreateTaskSchema, normalizeCreateTask } from '../contracts/tasks.js';
 import client from 'prom-client';
 
